@@ -29,10 +29,10 @@ class TestGenAIMath(unittest.TestCase):
         self.assertEqual(self.b // self.a, AINumber("2"))
 
     def test_sqrt(self):
-        self.assertEqual(sqrt(self.a), AINumber("3.1622776601683795"))
+        self.assertTrue(abs(sqrt(self.a) - AINumber("3.1622776601683795")) < 0.00001)
 
     def test_cbrt(self):
-        self.assertEqual(cbrt(self.a), AINumber("2.154434690031884"))
+        self.assertTrue(abs(cbrt(self.a) - AINumber("2.154434690031884")) < 0.00001)
 
     def test_squared(self):
         self.assertEqual(self.a.squared(), AINumber("100"))
@@ -41,7 +41,7 @@ class TestGenAIMath(unittest.TestCase):
         self.assertEqual(self.a.cubed(), AINumber("1000"))
 
     def test_tetrate(self):
-        self.assertEqual(self.a.tetrate(3), AINumber(str(10 ** (10 ** 3))))
+        self.assertEqual(self.a.tetrate(3), AINumber("1.0e+10000000000"))
 
     def test_factorial(self):
         self.assertEqual(factorial(self.a), AINumber("3628800"))

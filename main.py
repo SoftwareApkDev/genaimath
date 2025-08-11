@@ -18,9 +18,6 @@ mp.pretty = True
 
 # Creating static variables to be used throughout the application.
 
-OLLAMA_MODELS: list = ["llama3.2", "llama3.2:1b", "llama3.1", "llama3.1:70b", "llama3.1:405b", "phi3", "phi3:medium",
-                       "gemma2:2b", "gemma2", "gemma2:27b", "mistral", "moondream", "neural-chat", "starling-lm",
-                       "codellama", "llama2-uncensored", "llava", "solar"]
 MPF_SAFE_LIMIT_HIGH: mpf = mpf("10") ** mpf("1e1000")
 MPF_SAFE_LIMIT_LOW: mpf = mpf("1") / (mpf("10") ** mpf("1e1000"))
 
@@ -30,11 +27,11 @@ MPF_SAFE_LIMIT_LOW: mpf = mpf("1") / (mpf("10") ** mpf("1e1000"))
 
 def is_safe_number(obj: object) -> bool:
     """
-    Check if the number is within the safe limits defined by MPF_SAFE_LIMIT_HIGH and MPF_SAFE_LIMIT_LOW.
+    Check if the number is either zero or within the safe limits defined by MPF_SAFE_LIMIT_HIGH and MPF_SAFE_LIMIT_LOW.
     """
     try:
         num = mpf(str(obj))
-        return MPF_SAFE_LIMIT_LOW < num < MPF_SAFE_LIMIT_HIGH
+        return MPF_SAFE_LIMIT_LOW < mpmath.fabs(num) < MPF_SAFE_LIMIT_HIGH or num == 0
     except ValueError:
         return False
 
@@ -71,43 +68,57 @@ class AINumber:
 
     def __init__(self, value):
         # type: (str) -> None
+        if not is_safe_number(value):
+            value = ai_calculate(f"Please return the safe value of {value} in simplest readable form.")
         self.value: str = value
 
     def __add__(self, other):
         # type: (object) -> AINumber
         other_value: str = other.value if isinstance(other, AINumber) else str(other)
-        result: mpf = mpf(self.value) + mpf(other_value)
-        if is_safe_number(result):
-            return AINumber(str(result))
-        else:
+        if not is_safe_number(self.value) or not is_safe_number(other_value):
             return AINumber(ai_calculate(f"{self.value} + {other_value}"))
+        else:
+            result: mpf = mpf(self.value) + mpf(other_value)
+            if is_safe_number(result):
+                return AINumber(str(result))
+            else:
+                return AINumber(ai_calculate(f"{self.value} + {other_value}"))
 
     def __sub__(self, other):
         # type: (object) -> AINumber
         other_value: str = other.value if isinstance(other, AINumber) else str(other)
-        result: mpf = mpf(self.value) - mpf(other_value)
-        if is_safe_number(result):
-            return AINumber(str(result))
-        else:
+        if not is_safe_number(self.value) or not is_safe_number(other_value):
             return AINumber(ai_calculate(f"{self.value} - {other_value}"))
+        else:
+            result: mpf = mpf(self.value) - mpf(other_value)
+            if is_safe_number(result):
+                return AINumber(str(result))
+            else:
+                return AINumber(ai_calculate(f"{self.value} - {other_value}"))
 
     def __mul__(self, other):
         # type: (object) -> AINumber
         other_value: str = other.value if isinstance(other, AINumber) else str(other)
-        result: mpf = mpf(self.value) * mpf(other_value)
-        if is_safe_number(result):
-            return AINumber(str(result))
-        else:
+        if not is_safe_number(self.value) or not is_safe_number(other_value):
             return AINumber(ai_calculate(f"{self.value} * {other_value}"))
+        else:
+            result: mpf = mpf(self.value) * mpf(other_value)
+            if is_safe_number(result):
+                return AINumber(str(result))
+            else:
+                return AINumber(ai_calculate(f"{self.value} * {other_value}"))
 
     def __pow__(self, other):
         # type: (object) -> AINumber
         other_value: str = other.value if isinstance(other, AINumber) else str(other)
-        result: mpf = mpf(self.value) ** mpf(other_value)
-        if is_safe_number(result):
-            return AINumber(str(result))
-        else:
+        if not is_safe_number(self.value) or not is_safe_number(other_value):
             return AINumber(ai_calculate(f"{self.value} ** {other_value}"))
+        else:
+            result: mpf = mpf(self.value) ** mpf(other_value)
+            if is_safe_number(result):
+                return AINumber(str(result))
+            else:
+                return AINumber(ai_calculate(f"{self.value} ** {other_value}"))
 
     def __mod__(self, other):
         # type: (object) -> AINumber
@@ -124,20 +135,26 @@ class AINumber:
     def __truediv__(self, other):
         # type: (object) -> AINumber
         other_value: str = other.value if isinstance(other, AINumber) else str(other)
-        result: mpf = mpf(self.value) / mpf(other_value)
-        if is_safe_number(result):
-            return AINumber(str(result))
-        else:
+        if not is_safe_number(self.value) or not is_safe_number(other_value):
             return AINumber(ai_calculate(f"{self.value} / {other_value}"))
+        else:
+            result: mpf = mpf(self.value) / mpf(other_value)
+            if is_safe_number(result):
+                return AINumber(str(result))
+            else:
+                return AINumber(ai_calculate(f"{self.value} / {other_value}"))
 
     def __floordiv__(self, other):
         # type: (object) -> AINumber
         other_value: str = other.value if isinstance(other, AINumber) else str(other)
-        result: mpf = mpmath.floor(mpf(self.value) / mpf(other_value))
-        if is_safe_number(result):
-            return AINumber(str(result))
-        else:
+        if not is_safe_number(self.value) or not is_safe_number(other_value):
             return AINumber(ai_calculate(f"{self.value} // {other_value}"))
+        else:
+            result: mpf = mpmath.floor(mpf(self.value) / mpf(other_value))
+            if is_safe_number(result):
+                return AINumber(str(result))
+            else:
+                return AINumber(ai_calculate(f"{self.value} // {other_value}"))
 
     def __int__(self):
         # type: () -> int
@@ -149,10 +166,10 @@ class AINumber:
     def __float__(self):
         # type: () -> float
         if is_safe_number(self.value):
-            if mpf(self.value) < mpf("2.2250738585072014e-308"):
-                raise Exception("Underflow! The BigNumber object is too small to be converted to a float!")
-            elif mpf(self.value) > mpf("1.7976931348623157e+308"):
-                raise Exception("Overflow! The BigNumber object is too large to be converted to a float!")
+            if mpmath.fabs(self.value) < mpf("2.2250738585072014e-308"):
+                raise Exception("Underflow! The AINumber object is too small to be converted to a float!")
+            elif mpmath.fabs(self.value) > mpf("1.7976931348623157e+308"):
+                raise Exception("Overflow! The AINumber object is too large to be converted to a float!")
             else:
                 return float(mpf(self.value))
         else:
@@ -174,11 +191,14 @@ class AINumber:
 
     def tetrate(self, number):
         # type: (int) -> AINumber
-        result: mpf = tetration_recursive(mpf(self.value), number)
-        if is_safe_number(result):
-            return AINumber(str(result))
-        else:
+        if not is_safe_number(self.value):
             return AINumber(ai_calculate(f"{self.value} tetrated to {number}"))
+        else:
+            result: mpf = tetration_recursive(mpf(self.value), number)
+            if is_safe_number(result):
+                return AINumber(str(result))
+            else:
+                return AINumber(ai_calculate(f"{self.value} tetrated to {number}"))
 
     def __pos__(self):
         # type: () -> AINumber
@@ -197,7 +217,7 @@ class AINumber:
     def __abs__(self):
         # type: () -> AINumber
         if is_safe_number(self.value):
-            return AINumber(str(abs(mpf(self.value))))
+            return AINumber(str(mpmath.fabs(self.value)))
         else:
             return AINumber(ai_calculate(f"Please return the absolute value of {self.value}"))
 
@@ -218,29 +238,38 @@ class AINumber:
     def __and__(self, other):
         # type: (object) -> AINumber
         other_value: str = other.value if isinstance(other, AINumber) else str(other)
-        result: mpf = mpf(self.value) & mpf(other_value)
-        if is_safe_number(result):
-            return AINumber(str(result))
-        else:
+        if not is_safe_number(self.value) or not is_safe_number(other_value):
             return AINumber(ai_calculate(f"{self.value} & {other_value}"))
+        else:
+            result: mpf = mpf(self.value) & mpf(other_value)
+            if is_safe_number(result):
+                return AINumber(str(result))
+            else:
+                return AINumber(ai_calculate(f"{self.value} & {other_value}"))
 
     def __or__(self, other):
         # type: (object) -> AINumber
         other_value: str = other.value if isinstance(other, AINumber) else str(other)
-        result: mpf = mpf(self.value) | mpf(other_value)
-        if is_safe_number(result):
-            return AINumber(str(result))
-        else:
+        if not is_safe_number(self.value) or not is_safe_number(other_value):
             return AINumber(ai_calculate(f"{self.value} | {other_value}"))
+        else:
+            result: mpf = mpf(self.value) | mpf(other_value)
+            if is_safe_number(result):
+                return AINumber(str(result))
+            else:
+                return AINumber(ai_calculate(f"{self.value} | {other_value}"))
 
     def __xor__(self, other):
         # type: (object) -> AINumber
         other_value: str = other.value if isinstance(other, AINumber) else str(other)
-        result: mpf = mpf(self.value) ^ mpf(other_value)
-        if is_safe_number(result):
-            return AINumber(str(result))
-        else:
+        if not is_safe_number(self.value) or not is_safe_number(other_value):
             return AINumber(ai_calculate(f"{self.value} ^ {other_value}"))
+        else:
+            result: mpf = mpf(self.value) ^ mpf(other_value)
+            if is_safe_number(result):
+                return AINumber(str(result))
+            else:
+                return AINumber(ai_calculate(f"{self.value} ^ {other_value}"))
 
     def __gt__(self, other):
         # type: (object) -> bool
@@ -319,152 +348,202 @@ def cbrt(ai_number):
 
 
 def sin(ai_number: AINumber) -> AINumber:
-    result: mpf = mpmath.sin(ai_number.value)
-    if is_safe_number(result):
-        return AINumber(str(result))
-    else:
+    if not is_safe_number(ai_number.value):
         return AINumber(ai_calculate(f"Please return the sine of {ai_number.value}"))
+    else:
+        result: mpf = mpmath.sin(ai_number.value)
+        if is_safe_number(result):
+            return AINumber(str(result))
+        else:
+            return AINumber(ai_calculate(f"Please return the sine of {ai_number.value}"))
 
 
 def cos(ai_number: AINumber) -> AINumber:
-    result: mpf = mpmath.cos(ai_number.value)
-    if is_safe_number(result):
-        return AINumber(str(result))
-    else:
+    if not is_safe_number(ai_number.value):
         return AINumber(ai_calculate(f"Please return the cosine of {ai_number.value}"))
+    else:
+        result: mpf = mpmath.cos(ai_number.value)
+        if is_safe_number(result):
+            return AINumber(str(result))
+        else:
+            return AINumber(ai_calculate(f"Please return the cosine of {ai_number.value}"))
 
 
 def tan(ai_number: AINumber) -> AINumber:
-    result: mpf = mpmath.tan(ai_number.value)
-    if is_safe_number(result):
-        return AINumber(str(result))
-    else:
+    if not is_safe_number(ai_number.value):
         return AINumber(ai_calculate(f"Please return the tangent of {ai_number.value}"))
+    else:
+        result: mpf = mpmath.tan(ai_number.value)
+        if is_safe_number(result):
+            return AINumber(str(result))
+        else:
+            return AINumber(ai_calculate(f"Please return the tangent of {ai_number.value}"))
 
 
 def cosec(ai_number: AINumber) -> AINumber:
-    result: mpf = mpf("1") / mpmath.sin(ai_number.value)
-    if is_safe_number(result):
-        return AINumber(str(result))
-    else:
+    if not is_safe_number(ai_number.value):
         return AINumber(ai_calculate(f"Please return the cosecant of {ai_number.value}"))
+    else:
+        result: mpf = mpf("1") / mpmath.sin(ai_number.value)
+        if is_safe_number(result):
+            return AINumber(str(result))
+        else:
+            return AINumber(ai_calculate(f"Please return the cosecant of {ai_number.value}"))
 
 
 def sec(ai_number: AINumber) -> AINumber:
-    result: mpf = mpf("1") / mpmath.cos(ai_number.value)
-    if is_safe_number(result):
-        return AINumber(str(result))
-    else:
+    if not is_safe_number(ai_number.value):
         return AINumber(ai_calculate(f"Please return the secant of {ai_number.value}"))
+    else:
+        result: mpf = mpf("1") / mpmath.cos(ai_number.value)
+        if is_safe_number(result):
+            return AINumber(str(result))
+        else:
+            return AINumber(ai_calculate(f"Please return the secant of {ai_number.value}"))
 
 
 def cot(ai_number: AINumber) -> AINumber:
-    result: mpf = mpf("1") / mpmath.tan(ai_number.value)
-    if is_safe_number(result):
-        return AINumber(str(result))
-    else:
+    if not is_safe_number(ai_number.value):
         return AINumber(ai_calculate(f"Please return the cotangent of {ai_number.value}"))
+    else:
+        result: mpf = mpf("1") / mpmath.tan(ai_number.value)
+        if is_safe_number(result):
+            return AINumber(str(result))
+        else:
+            return AINumber(ai_calculate(f"Please return the cotangent of {ai_number.value}"))
 
 
 def sinh(ai_number: AINumber) -> AINumber:
-    result: mpf = mpmath.sinh(ai_number.value)
-    if is_safe_number(result):
-        return AINumber(str(result))
-    else:
+    if not is_safe_number(ai_number.value):
         return AINumber(ai_calculate(f"Please return the hyperbolic sine of {ai_number.value}"))
+    else:
+        result: mpf = mpmath.sinh(ai_number.value)
+        if is_safe_number(result):
+            return AINumber(str(result))
+        else:
+            return AINumber(ai_calculate(f"Please return the hyperbolic sine of {ai_number.value}"))
 
 
 def cosh(ai_number: AINumber) -> AINumber:
-    result: mpf = mpmath.cosh(ai_number.value)
-    if is_safe_number(result):
-        return AINumber(str(result))
-    else:
+    if not is_safe_number(ai_number.value):
         return AINumber(ai_calculate(f"Please return the hyperbolic cosine of {ai_number.value}"))
+    else:
+        result: mpf = mpmath.cosh(ai_number.value)
+        if is_safe_number(result):
+            return AINumber(str(result))
+        else:
+            return AINumber(ai_calculate(f"Please return the hyperbolic cosine of {ai_number.value}"))
 
 
 def tanh(ai_number: AINumber) -> AINumber:
-    result: mpf = mpmath.tanh(ai_number.value)
-    if is_safe_number(result):
-        return AINumber(str(result))
-    else:
+    if not is_safe_number(ai_number.value):
         return AINumber(ai_calculate(f"Please return the hyperbolic tangent of {ai_number.value}"))
+    else:
+        result: mpf = mpmath.tanh(ai_number.value)
+        if is_safe_number(result):
+            return AINumber(str(result))
+        else:
+            return AINumber(ai_calculate(f"Please return the hyperbolic tangent of {ai_number.value}"))
 
 
 def cosech(ai_number: AINumber) -> AINumber:
-    result: mpf = mpf("1") / mpmath.sinh(ai_number.value)
-    if is_safe_number(result):
-        return AINumber(str(result))
-    else:
+    if not is_safe_number(ai_number.value):
         return AINumber(ai_calculate(f"Please return the hyperbolic cosecant of {ai_number.value}"))
+    else:
+        result: mpf = mpf("1") / mpmath.sinh(ai_number.value)
+        if is_safe_number(result):
+            return AINumber(str(result))
+        else:
+            return AINumber(ai_calculate(f"Please return the hyperbolic cosecant of {ai_number.value}"))
 
 
 def sech(ai_number: AINumber) -> AINumber:
-    result: mpf = mpf("1") / mpmath.cosh(ai_number.value)
-    if is_safe_number(result):
-        return AINumber(str(result))
-    else:
+    if not is_safe_number(ai_number.value):
         return AINumber(ai_calculate(f"Please return the hyperbolic secant of {ai_number.value}"))
+    else:
+        result: mpf = mpf("1") / mpmath.cosh(ai_number.value)
+        if is_safe_number(result):
+            return AINumber(str(result))
+        else:
+            return AINumber(ai_calculate(f"Please return the hyperbolic secant of {ai_number.value}"))
 
 
 def coth(ai_number: AINumber) -> AINumber:
-    result: mpf = mpf("1") / mpmath.tanh(ai_number.value)
-    if is_safe_number(result):
-        return AINumber(str(result))
-    else:
+    if not is_safe_number(ai_number.value):
         return AINumber(ai_calculate(f"Please return the hyperbolic cotangent of {ai_number.value}"))
+    else:
+        result: mpf = mpf("1") / mpmath.tanh(ai_number.value)
+        if is_safe_number(result):
+            return AINumber(str(result))
+        else:
+            return AINumber(ai_calculate(f"Please return the hyperbolic cotangent of {ai_number.value}"))
 
 
 def factorial(ai_number: AINumber) -> AINumber:
-    result: mpf = mpmath.gamma(mpf(ai_number.value) + mpf("1"))
-    if is_safe_number(result):
-        return AINumber(str(result))
-    else:
+    if not is_safe_number(ai_number.value):
         return AINumber(ai_calculate(f"Please return the factorial of {ai_number.value}"))
+    else:
+        result: mpf = mpmath.gamma(mpf(ai_number.value) + mpf("1"))
+        if is_safe_number(result):
+            return AINumber(str(result))
+        else:
+            return AINumber(ai_calculate(f"Please return the factorial of {ai_number.value}"))
 
 
 def gamma(ai_number: AINumber) -> AINumber:
-    result: mpf = mpmath.gamma(mpf(ai_number.value))
-    if is_safe_number(result):
-        return AINumber(str(result))
-    else:
+    if not is_safe_number(ai_number.value):
         return AINumber(ai_calculate(f"Please return the gamma function of {ai_number.value}"))
+    else:
+        result: mpf = mpmath.gamma(mpf(ai_number.value))
+        if is_safe_number(result):
+            return AINumber(str(result))
+        else:
+            return AINumber(ai_calculate(f"Please return the gamma function of {ai_number.value}"))
 
 
 def ln(ai_number: AINumber) -> AINumber:
-    result: mpf = log(ai_number.value)
-    if is_safe_number(result):
-        return AINumber(str(result))
-    else:
+    if not is_safe_number(ai_number.value):
         return AINumber(ai_calculate(f"Please return the natural logarithm of {ai_number.value}"))
+    else:
+        result: mpf = log(ai_number.value)
+        if is_safe_number(result):
+            return AINumber(str(result))
+        else:
+            return AINumber(ai_calculate(f"Please return the natural logarithm of {ai_number.value}"))
 
 
 def log_e(ai_number: AINumber) -> AINumber:
-    result: mpf = mpmath.ln(ai_number.value)
-    if is_safe_number(result):
-        return AINumber(str(result))
-    else:
+    if not is_safe_number(ai_number.value):
         return AINumber(ai_calculate(f"Please return the natural logarithm of {ai_number.value}"))
+    else:
+        result: mpf = mpmath.ln(ai_number.value)
+        if is_safe_number(result):
+            return AINumber(str(result))
+        else:
+            return AINumber(ai_calculate(f"Please return the natural logarithm of {ai_number.value}"))
 
 
 def log_10(ai_number: AINumber) -> AINumber:
-    result: mpf = log10(mpf(ai_number.value))
-    if is_safe_number(result):
-        return AINumber(str(result))
-    else:
+    if not is_safe_number(ai_number.value):
         return AINumber(ai_calculate(f"Please return the base 10 logarithm of {ai_number.value}"))
-
-
-def log_base(ai_number: AINumber, base: AINumber or mpf or float or int) -> AINumber:
-    if isinstance(base, AINumber):
-        return log_10(ai_number) / log_10(base)
     else:
-        return log_10(ai_number) / log10(mpf(base))
+        result: mpf = log10(mpf(ai_number.value))
+        if is_safe_number(result):
+            return AINumber(str(result))
+        else:
+            return AINumber(ai_calculate(f"Please return the base 10 logarithm of {ai_number.value}"))
+
+
+def log_base(ai_number: AINumber, base: AINumber) -> AINumber:
+    if not is_safe_number(ai_number.value) or not is_safe_number(base.value):
+        return AINumber(ai_calculate(f"Please return the base {base.value} logarithm of {ai_number.value}"))
+    else:
+        return log_10(ai_number) / log_10(base)
 
 
 def is_prime(ai_number: AINumber) -> bool:
-    num: mpf = mpf(ai_number.value)
-    if is_safe_number(num):
-        if mpf(ai_number.value) % 1 == mpf("0"):
+    if is_safe_number(ai_number):
+        if ai_number % 1 == 0:
             up_range: int = int(ai_number.__floor__())
             factors: list = [i for i in range(1, up_range) if ai_number // mpf(i) == ai_number / mpf(i)] + [ai_number]
             return len(factors) == 2
@@ -479,7 +558,7 @@ def is_prime(ai_number: AINumber) -> bool:
 
 
 def gcd(a: AINumber, b: AINumber) -> AINumber:
-    if a == mpf("0"):
+    if a == 0:
         return b
     return gcd(b % a, a)
 

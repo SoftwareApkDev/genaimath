@@ -6,10 +6,11 @@ GenAIMath is a Python library for advanced mathematical operations using arbitra
 - Arbitrary-precision arithmetic
 - Advanced mathematical functions
 - Easy-to-use API
+- Limitless range of numbers being supported (no upper or lower number limits)
 
 ## Installation
 
-You can install GenAIMath via pip (after publishing to PyPI):
+You can install GenAIMath via pip:
 
 ```bash
 pip install genaimath
@@ -34,10 +35,6 @@ Run tests with:
 ```bash
 python -m unittest discover tests
 ```
-
-## License
-
-MIT License
 
 ## Contributing
 
