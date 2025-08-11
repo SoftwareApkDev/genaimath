@@ -66,11 +66,31 @@ class AINumber:
     A class to represent a number with AI capabilities.
     """
 
-    def __init__(self, value):
-        # type: (str) -> None
-        if not is_safe_number(value):
-            value = ai_calculate(f"Please return the safe value of {value} in simplest readable form.")
-        self.value: str = value
+    def __init__(self, value, symbolic=None):
+        """
+        Accept any type and convert to mpf for unlimited precision.
+        If symbolic is provided, store it for readable output.
+        """
+        self.symbolic = symbolic
+        try:
+            self.value = mpf(value)
+        except Exception:
+            self.value = value
+
+    def readable(self, max_digits=10):
+        """
+        Return a human-readable string for any magnitude, using scientific notation for very large/small numbers.
+        If symbolic representation exists, use it.
+        """
+        if self.symbolic:
+            return self.symbolic
+        try:
+            return nstr(self.value, max_digits)
+        except Exception:
+            return str(self.value)
+
+    def __str__(self):
+        return self.readable()
 
     def __add__(self, other):
         # type: (object) -> AINumber
@@ -109,16 +129,23 @@ class AINumber:
                 return AINumber(ai_calculate(f"{self.value} * {other_value}"))
 
     def __pow__(self, other):
-        # type: (object) -> AINumber
-        other_value: str = other.value if isinstance(other, AINumber) else str(other)
-        if not is_safe_number(self.value) or not is_safe_number(other_value):
-            return AINumber(ai_calculate(f"{self.value} ** {other_value}"))
+        if isinstance(other, AINumber):
+            other_val = other.value
+            other_readable = other.readable()
         else:
-            result: mpf = mpf(self.value) ** mpf(other_value)
+            other_val = mpf(other)
+            other_readable = str(other)
+        symbolic = f"({self.readable()})^({other_readable})"
+        try:
+            if not is_safe_number(self.value) or not is_safe_number(other_val):
+                return AINumber(None, symbolic=symbolic)
+            result = self.value ** other_val
             if is_safe_number(result):
-                return AINumber(str(result))
+                return AINumber(result)
             else:
-                return AINumber(ai_calculate(f"{self.value} ** {other_value}"))
+                return AINumber(None, symbolic=symbolic)
+        except Exception:
+            return AINumber(None, symbolic=symbolic)
 
     def __mod__(self, other):
         # type: (object) -> AINumber
@@ -191,14 +218,15 @@ class AINumber:
 
     def tetrate(self, number):
         # type: (int) -> AINumber
+        symbolic = f"({self.readable()})↑↑({number})"
         if not is_safe_number(self.value):
-            return AINumber(ai_calculate(f"{self.value} tetrated to {number}"))
+            return AINumber(None, symbolic=symbolic)
         else:
             result: mpf = tetration_recursive(mpf(self.value), number)
             if is_safe_number(result):
                 return AINumber(str(result))
             else:
-                return AINumber(ai_calculate(f"{self.value} tetrated to {number}"))
+                return AINumber(None, symbolic=symbolic)
 
     def __pos__(self):
         # type: () -> AINumber
@@ -318,10 +346,6 @@ class AINumber:
             return ai_calculate(f"Is {self.value} not equal to {other_value}?") == "Yes"
         else:
             return mpf(self.value) != mpf(other_value)
-
-    def __str__(self):
-        # type: () -> str
-        return str(self.value)
 
     def clone(self):
         # type: () -> AINumber
