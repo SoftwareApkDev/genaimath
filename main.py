@@ -36,7 +36,11 @@ def is_safe_number(obj: object) -> bool:
         return False
 
 
-def tetration_recursive(base: mpf, height: int) -> mpf:
+def tetration_recursive(base, height):
+    # type: (AINumber, int) -> AINumber
+    """
+    Recursive implementation of tetration (repeated exponentiation).
+    """
     if height == 0:
         return 1  # Standard definition for height 0
     elif height == 1:
@@ -90,10 +94,16 @@ class AINumber:
             return str(self.value)
 
     def __str__(self):
+        """
+        Return a human-readable string for any magnitude, using scientific notation for very large/small numbers.
+        """
         return self.readable()
 
     def __add__(self, other):
         # type: (object) -> AINumber
+        """
+        Implements addition for AINumber objects.
+        """
         other_value: str = other.value if isinstance(other, AINumber) else str(other)
         if not is_safe_number(self.value) or not is_safe_number(other_value):
             return AINumber(ai_calculate(f"{self.value} + {other_value}"))
@@ -106,6 +116,9 @@ class AINumber:
 
     def __sub__(self, other):
         # type: (object) -> AINumber
+        """
+        Implements subtraction for AINumber objects.
+        """
         other_value: str = other.value if isinstance(other, AINumber) else str(other)
         if not is_safe_number(self.value) or not is_safe_number(other_value):
             return AINumber(ai_calculate(f"{self.value} - {other_value}"))
@@ -118,6 +131,9 @@ class AINumber:
 
     def __mul__(self, other):
         # type: (object) -> AINumber
+        """
+        Implements multiplication for AINumber objects.
+        """
         other_value: str = other.value if isinstance(other, AINumber) else str(other)
         if not is_safe_number(self.value) or not is_safe_number(other_value):
             return AINumber(ai_calculate(f"{self.value} * {other_value}"))
@@ -129,6 +145,10 @@ class AINumber:
                 return AINumber(ai_calculate(f"{self.value} * {other_value}"))
 
     def __pow__(self, other):
+        # type: (object) -> AINumber
+        """
+        Implements exponentiation for AINumber objects.
+        """
         if isinstance(other, AINumber):
             other_val = other.value
             other_readable = other.readable()
@@ -149,6 +169,10 @@ class AINumber:
 
     def __mod__(self, other):
         # type: (object) -> AINumber
+        """
+        Implements the modulo operation for AINumber objects.
+        If either operand is not a safe number, uses ai_calculate for the result.
+        """
         other_value: str = other.value if isinstance(other, AINumber) else str(other)
         if not is_safe_number(self.value) or not is_safe_number(other_value):
             return AINumber(ai_calculate(f"{self.value} % {other_value}"))
@@ -161,6 +185,10 @@ class AINumber:
 
     def __truediv__(self, other):
         # type: (object) -> AINumber
+        """
+        Implements true division for AINumber objects.
+        If either operand is not a safe number, uses ai_calculate for the result.
+        """
         other_value: str = other.value if isinstance(other, AINumber) else str(other)
         if not is_safe_number(self.value) or not is_safe_number(other_value):
             return AINumber(ai_calculate(f"{self.value} / {other_value}"))
@@ -173,6 +201,10 @@ class AINumber:
 
     def __floordiv__(self, other):
         # type: (object) -> AINumber
+        """
+        Implements floor division for AINumber objects.
+        If either operand is not a safe number, uses ai_calculate for the result.
+        """
         other_value: str = other.value if isinstance(other, AINumber) else str(other)
         if not is_safe_number(self.value) or not is_safe_number(other_value):
             return AINumber(ai_calculate(f"{self.value} // {other_value}"))
@@ -185,6 +217,10 @@ class AINumber:
 
     def __int__(self):
         # type: () -> int
+        """
+        Convert the AINumber object to an integer.
+        Uses AI fallback if the value is not safe for direct conversion.
+        """
         if is_safe_number(self.value):
             return int(mpf(self.value))
         else:
@@ -192,6 +228,10 @@ class AINumber:
 
     def __float__(self):
         # type: () -> float
+        """
+        Convert the AINumber object to a float.
+        Raises exceptions for underflow/overflow and uses AI fallback for unsafe values.
+        """
         if is_safe_number(self.value):
             if self.value != 0 and mpmath.fabs(self.value) < mpf("2.2250738585072014e-308"):
                 raise Exception("Underflow! The AINumber object is too small to be converted to a float!")
@@ -204,6 +244,10 @@ class AINumber:
 
     def squared(self):
         # type: () -> AINumber
+        """
+        Returns the square of the AINumber object.
+        Uses AI fallback if the value is not safe for direct calculation.
+        """
         if is_safe_number(self.value):
             return self.__pow__(2)
         else:
@@ -211,6 +255,10 @@ class AINumber:
 
     def cubed(self):
         # type: () -> AINumber
+        """
+        Returns the cube of the AINumber object.
+        Uses AI fallback if the value is not safe for direct calculation.
+        """
         if is_safe_number(self.value):
             return self.__pow__(3)
         else:
@@ -218,6 +266,10 @@ class AINumber:
 
     def tetrate(self, number):
         # type: (int) -> AINumber
+        """
+        Returns the result of tetration (repeated exponentiation) of the AINumber object to the given height.
+        Uses AI fallback if the value is not safe for direct calculation.
+        """
         symbolic = f"({self.readable()})↑↑({number})"
         if not is_safe_number(self.value):
             return AINumber(None, symbolic=symbolic)
@@ -230,6 +282,9 @@ class AINumber:
 
     def __pos__(self):
         # type: () -> AINumber
+        """
+        Returns the positive value of the AINumber object as a new AINumber.
+        """
         if is_safe_number(self.value):
             return self
         else:
@@ -237,6 +292,9 @@ class AINumber:
 
     def __neg__(self):
         # type: () -> AINumber
+        """
+        Returns the negative value of the AINumber object as a new AINumber.
+        """
         if is_safe_number(self.value):
             return AINumber(str(-mpf(self.value)))
         else:
@@ -244,6 +302,9 @@ class AINumber:
 
     def __abs__(self):
         # type: () -> AINumber
+        """
+        Returns the absolute value of the AINumber object as a new AINumber.
+        """
         if is_safe_number(self.value):
             return AINumber(str(mpmath.fabs(self.value)))
         else:
@@ -251,6 +312,10 @@ class AINumber:
 
     def __floor__(self):
         # type: () -> AINumber
+        """
+        Returns the floor value of the AINumber object as a new AINumber.
+        Uses AI fallback if the value is not safe for direct calculation.
+        """
         if is_safe_number(self.value):
             return AINumber(str(floor(mpf(self.value))))
         else:
@@ -258,6 +323,10 @@ class AINumber:
 
     def __ceil__(self):
         # type: () -> AINumber
+        """
+        Returns the ceiling value of the AINumber object as a new AINumber.
+        Uses AI fallback if the value is not safe for direct calculation.
+        """
         if is_safe_number(self.value):
             return AINumber(str(ceil(mpf(self.value))))
         else:
@@ -265,6 +334,10 @@ class AINumber:
 
     def __and__(self, other):
         # type: (object) -> AINumber
+        """
+        Implements bitwise AND operation for AINumber objects.
+        Uses AI fallback if either operand is not a safe number.
+        """
         other_value: str = other.value if isinstance(other, AINumber) else str(other)
         if not is_safe_number(self.value) or not is_safe_number(other_value):
             return AINumber(ai_calculate(f"{self.value} & {other_value}"))
@@ -277,6 +350,10 @@ class AINumber:
 
     def __or__(self, other):
         # type: (object) -> AINumber
+        """
+        Implements bitwise OR operation for AINumber objects.
+        Uses AI fallback if either operand is not a safe number.
+        """
         other_value: str = other.value if isinstance(other, AINumber) else str(other)
         if not is_safe_number(self.value) or not is_safe_number(other_value):
             return AINumber(ai_calculate(f"{self.value} | {other_value}"))
@@ -289,6 +366,10 @@ class AINumber:
 
     def __xor__(self, other):
         # type: (object) -> AINumber
+        """
+        Implements bitwise XOR operation for AINumber objects.
+        Uses AI fallback if either operand is not a safe number.
+        """
         other_value: str = other.value if isinstance(other, AINumber) else str(other)
         if not is_safe_number(self.value) or not is_safe_number(other_value):
             return AINumber(ai_calculate(f"{self.value} ^ {other_value}"))
@@ -301,6 +382,11 @@ class AINumber:
 
     def __gt__(self, other):
         # type: (object) -> bool
+        """
+        Implements greater-than comparison for AINumber objects.
+        Uses AI fallback if either operand is not a safe number.
+        Returns True if self is greater than other, otherwise False.
+        """
         other_value: str = other.value if isinstance(other, AINumber) else str(other)
         if not is_safe_number(self.value) or not is_safe_number(other_value):
             return ai_calculate(f"Is {self.value} greater than {other_value}?") == "Yes"
@@ -309,6 +395,11 @@ class AINumber:
 
     def __ge__(self, other):
         # type: (object) -> bool
+        """
+        Implements greater-than-or-equal comparison for AINumber objects.
+        Uses AI fallback if either operand is not a safe number.
+        Returns True if self is greater than or equal to other, otherwise False.
+        """
         other_value: str = other.value if isinstance(other, AINumber) else str(other)
         if not is_safe_number(self.value) or not is_safe_number(other_value):
             return ai_calculate(f"Is {self.value} greater than or equal to {other_value}?") == "Yes"
@@ -317,6 +408,11 @@ class AINumber:
 
     def __lt__(self, other):
         # type: (object) -> bool
+        """
+        Implements less-than comparison for AINumber objects.
+        Uses AI fallback if either operand is not a safe number.
+        Returns True if self is less than other, otherwise False.
+        """
         other_value: str = other.value if isinstance(other, AINumber) else str(other)
         if not is_safe_number(self.value) or not is_safe_number(other_value):
             return ai_calculate(f"Is {self.value} less than {other_value}?") == "Yes"
@@ -325,6 +421,11 @@ class AINumber:
 
     def __le__(self, other):
         # type: (object) -> bool
+        """
+        Implements less-than-or-equal comparison for AINumber objects.
+        Uses AI fallback if either operand is not a safe number.
+        Returns True if self is less than or equal to other, otherwise False.
+        """
         other_value: str = other.value if isinstance(other, AINumber) else str(other)
         if not is_safe_number(self.value) or not is_safe_number(other_value):
             return ai_calculate(f"Is {self.value} less than or equal to {other_value}?") == "Yes"
@@ -333,6 +434,11 @@ class AINumber:
 
     def __eq__(self, other):
         # type: (object) -> bool
+        """
+        Implements equality comparison for AINumber objects.
+        Uses AI fallback if either operand is not a safe number.
+        Returns True if values are equal, otherwise False.
+        """
         other_value: str = other.value if isinstance(other, AINumber) else str(other)
         if not is_safe_number(self.value) or not is_safe_number(other_value):
             return ai_calculate(f"Is {self.value} equal to {other_value}?") == "Yes"
@@ -341,6 +447,11 @@ class AINumber:
 
     def __ne__(self, other):
         # type: (object) -> bool
+        """
+        Implements inequality comparison for AINumber objects.
+        Uses AI fallback if either operand is not a safe number.
+        Returns True if values are not equal, otherwise False.
+        """
         other_value: str = other.value if isinstance(other, AINumber) else str(other)
         if not is_safe_number(self.value) or not is_safe_number(other_value):
             return ai_calculate(f"Is {self.value} not equal to {other_value}?") == "Yes"
@@ -349,6 +460,10 @@ class AINumber:
 
     def clone(self):
         # type: () -> AINumber
+        """
+        Create a deep copy of the AINumber object.
+        Returns a new instance with the same value and symbolic representation.
+        """
         return copy.deepcopy(self)
 
 
@@ -691,6 +806,9 @@ def log_10(ai_number: AINumber) -> AINumber:
 
 
 def log_base(ai_number: AINumber, base: AINumber) -> AINumber:
+    """
+    Compute the logarithm of a number with a specified base.
+    """
     if not is_safe_number(ai_number.value) or not is_safe_number(base.value):
         return AINumber(ai_calculate(f"Please return the base {base.value} logarithm of {ai_number.value}"))
     else:
@@ -698,6 +816,9 @@ def log_base(ai_number: AINumber, base: AINumber) -> AINumber:
 
 
 def is_prime(ai_number: AINumber) -> bool:
+    """
+    Check if a number is prime.
+    """
     if is_safe_number(ai_number):
         if ai_number % 1 == 0:
             up_range: int = int(ai_number.__floor__())
@@ -714,12 +835,18 @@ def is_prime(ai_number: AINumber) -> bool:
 
 
 def gcd(a: AINumber, b: AINumber) -> AINumber:
+    """
+    Compute the greatest common divisor (GCD) of two numbers using the Euclidean algorithm.
+    """
     if a == 0:
         return b
     return gcd(b % a, a)
 
 
 def lcm(a: AINumber, b: AINumber) -> AINumber:
+    """
+    Compute the least common multiple (LCM) of two numbers using the GCD.
+    """
     return (a / gcd(a, b)) * b
 
 

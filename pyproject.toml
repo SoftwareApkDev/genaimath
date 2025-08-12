@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "genaimath"
-version = "1.0.0"
+version = "1.1.0"
 description = "Advanced mathematical operations with arbitrary-precision arithmetic numbers, powered by AI. It supports limitless range of numbers."
 authors = [
     {name = "SoftwareApkDev", email = "softwareapkdev2022@gmail.com"}
