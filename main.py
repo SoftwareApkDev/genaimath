@@ -193,7 +193,7 @@ class AINumber:
     def __float__(self):
         # type: () -> float
         if is_safe_number(self.value):
-            if mpmath.fabs(self.value) < mpf("2.2250738585072014e-308"):
+            if self.value != 0 and mpmath.fabs(self.value) < mpf("2.2250738585072014e-308"):
                 raise Exception("Underflow! The AINumber object is too small to be converted to a float!")
             elif mpmath.fabs(self.value) > mpf("1.7976931348623157e+308"):
                 raise Exception("Overflow! The AINumber object is too large to be converted to a float!")
@@ -355,207 +355,339 @@ class AINumber:
 # Creating additional functions for AINumber class
 
 
-def sqrt(ai_number):
-    # type: (AINumber) -> AINumber
-    if is_safe_number(ai_number.value):
-        return AINumber(str(mpf(ai_number.value) ** mpf("1/2")))
-    else:
-        return AINumber(ai_calculate(f"Please return the square root of {ai_number.value}"))
+def sqrt(ai_number: AINumber) -> AINumber:
+    """
+    Compute the square root of a number with error handling and input validation.
+    """
+    try:
+        value = mpf(ai_number.value)
+        if value < 0:
+            return AINumber("nan")
+        if not is_safe_number(value):
+            return AINumber(ai_calculate(f"Please return the square root of {ai_number.value}"))
+        result: mpf = mpmath.sqrt(value)
+        if is_safe_number(result):
+            return AINumber(str(result))
+        else:
+            return AINumber(ai_calculate(f"Please return the square root of {ai_number.value}"))
+    except Exception:
+        return AINumber("nan")
 
 
-def cbrt(ai_number):
-    # type: (AINumber) -> AINumber
-    if is_safe_number(ai_number.value):
-        return AINumber(str(mpf(ai_number.value) ** mpf("1/3")))
-    else:
-        return AINumber(ai_calculate(f"Please return the cube root of {ai_number.value}"))
+def cbrt(ai_number: AINumber) -> AINumber:
+    """
+    Compute the cube root of a number with error handling and input validation.
+    """
+    try:
+        value = mpf(ai_number.value)
+        if not is_safe_number(value):
+            return AINumber(ai_calculate(f"Please return the cube root of {ai_number.value}"))
+        result: mpf = mpmath.root(value, 3)
+        if is_safe_number(result):
+            return AINumber(str(result))
+        else:
+            return AINumber(ai_calculate(f"Please return the cube root of {ai_number.value}"))
+    except Exception:
+        return AINumber("nan")
 
 
 def sin(ai_number: AINumber) -> AINumber:
-    if not is_safe_number(ai_number.value):
-        return AINumber(ai_calculate(f"Please return the sine of {ai_number.value}"))
-    else:
-        result: mpf = mpmath.sin(ai_number.value)
+    """
+    Compute the sine of a number with error handling and input validation.
+    """
+    try:
+        value = mpf(ai_number.value)
+        if not is_safe_number(value):
+            return AINumber(ai_calculate(f"Please return the sine of {ai_number.value}"))
+        result: mpf = mpmath.sin(value)
         if is_safe_number(result):
             return AINumber(str(result))
         else:
             return AINumber(ai_calculate(f"Please return the sine of {ai_number.value}"))
+    except Exception:
+        return AINumber("nan")
 
 
 def cos(ai_number: AINumber) -> AINumber:
-    if not is_safe_number(ai_number.value):
-        return AINumber(ai_calculate(f"Please return the cosine of {ai_number.value}"))
-    else:
-        result: mpf = mpmath.cos(ai_number.value)
+    """
+    Compute the cosine of a number with error handling and input validation.
+    """
+    try:
+        value = mpf(ai_number.value)
+        if not is_safe_number(value):
+            return AINumber(ai_calculate(f"Please return the cosine of {ai_number.value}"))
+        result: mpf = mpmath.cos(value)
         if is_safe_number(result):
             return AINumber(str(result))
         else:
             return AINumber(ai_calculate(f"Please return the cosine of {ai_number.value}"))
+    except Exception:
+        return AINumber("nan")
 
 
 def tan(ai_number: AINumber) -> AINumber:
-    if not is_safe_number(ai_number.value):
-        return AINumber(ai_calculate(f"Please return the tangent of {ai_number.value}"))
-    else:
-        result: mpf = mpmath.tan(ai_number.value)
+    """
+    Compute the tangent of a number with error handling and input validation.
+    """
+    try:
+        value = mpf(ai_number.value)
+        if not is_safe_number(value):
+            return AINumber(ai_calculate(f"Please return the tangent of {ai_number.value}"))
+        result: mpf = mpmath.tan(value)
         if is_safe_number(result):
             return AINumber(str(result))
         else:
             return AINumber(ai_calculate(f"Please return the tangent of {ai_number.value}"))
+    except Exception:
+        return AINumber("nan")
 
 
 def cosec(ai_number: AINumber) -> AINumber:
-    if not is_safe_number(ai_number.value):
-        return AINumber(ai_calculate(f"Please return the cosecant of {ai_number.value}"))
-    else:
-        result: mpf = mpf("1") / mpmath.sin(ai_number.value)
+    """
+    Compute the cosecant of a number with error handling and input validation.
+    Returns 'nan' for zero input and uses AI fallback for unsafe values.
+    """
+    try:
+        value = mpf(ai_number.value)
+        if value == 0:
+            return AINumber("nan")
+        if not is_safe_number(value):
+            return AINumber(ai_calculate(f"Please return the cosecant of {ai_number.value}"))
+        result: mpf = mpf("1") / mpmath.sin(value)
         if is_safe_number(result):
             return AINumber(str(result))
         else:
             return AINumber(ai_calculate(f"Please return the cosecant of {ai_number.value}"))
+    except Exception:
+        return AINumber("nan")
 
 
 def sec(ai_number: AINumber) -> AINumber:
-    if not is_safe_number(ai_number.value):
-        return AINumber(ai_calculate(f"Please return the secant of {ai_number.value}"))
-    else:
-        result: mpf = mpf("1") / mpmath.cos(ai_number.value)
+    """
+    Compute the secant of a number with error handling and input validation.
+    Returns 'nan' for zero input and uses AI fallback for unsafe values.
+    """
+    try:
+        value = mpf(ai_number.value)
+        if value == 0:
+            return AINumber("nan")
+        if not is_safe_number(value):
+            return AINumber(ai_calculate(f"Please return the secant of {ai_number.value}"))
+        result: mpf = mpf("1") / mpmath.cos(value)
         if is_safe_number(result):
             return AINumber(str(result))
         else:
             return AINumber(ai_calculate(f"Please return the secant of {ai_number.value}"))
+    except Exception:
+        return AINumber("nan")
 
 
 def cot(ai_number: AINumber) -> AINumber:
-    if not is_safe_number(ai_number.value):
-        return AINumber(ai_calculate(f"Please return the cotangent of {ai_number.value}"))
-    else:
-        result: mpf = mpf("1") / mpmath.tan(ai_number.value)
+    """
+    Compute the cotangent of a number with error handling and input validation.
+    Returns 'nan' for zero input and uses AI fallback for unsafe values.
+    """
+    try:
+        value = mpf(ai_number.value)
+        if value == 0:
+            return AINumber("nan")
+        if not is_safe_number(value):
+            return AINumber(ai_calculate(f"Please return the cotangent of {ai_number.value}"))
+        result: mpf = mpf("1") / mpmath.tan(value)
         if is_safe_number(result):
             return AINumber(str(result))
         else:
             return AINumber(ai_calculate(f"Please return the cotangent of {ai_number.value}"))
+    except Exception:
+        return AINumber("nan")
 
 
 def sinh(ai_number: AINumber) -> AINumber:
-    if not is_safe_number(ai_number.value):
-        return AINumber(ai_calculate(f"Please return the hyperbolic sine of {ai_number.value}"))
-    else:
-        result: mpf = mpmath.sinh(ai_number.value)
+    """
+    Compute the hyperbolic sine of a number with error handling and input validation.
+    """
+    try:
+        value = mpf(ai_number.value)
+        if not is_safe_number(value):
+            return AINumber(ai_calculate(f"Please return the hyperbolic sine of {ai_number.value}"))
+        result: mpf = mpmath.sinh(value)
         if is_safe_number(result):
             return AINumber(str(result))
         else:
             return AINumber(ai_calculate(f"Please return the hyperbolic sine of {ai_number.value}"))
+    except Exception:
+        return AINumber("nan")
 
 
 def cosh(ai_number: AINumber) -> AINumber:
-    if not is_safe_number(ai_number.value):
-        return AINumber(ai_calculate(f"Please return the hyperbolic cosine of {ai_number.value}"))
-    else:
-        result: mpf = mpmath.cosh(ai_number.value)
+    """
+    Compute the hyperbolic cosine of a number with error handling and input validation.
+    """
+    try:
+        value = mpf(ai_number.value)
+        if not is_safe_number(value):
+            return AINumber(ai_calculate(f"Please return the hyperbolic cosine of {ai_number.value}"))
+        result: mpf = mpmath.cosh(value)
         if is_safe_number(result):
             return AINumber(str(result))
         else:
             return AINumber(ai_calculate(f"Please return the hyperbolic cosine of {ai_number.value}"))
+    except Exception:
+        return AINumber("nan")
 
 
 def tanh(ai_number: AINumber) -> AINumber:
-    if not is_safe_number(ai_number.value):
-        return AINumber(ai_calculate(f"Please return the hyperbolic tangent of {ai_number.value}"))
-    else:
-        result: mpf = mpmath.tanh(ai_number.value)
+    """
+    Compute the hyperbolic tangent of a number with error handling and input validation.
+    """
+    try:
+        value = mpf(ai_number.value)
+        if not is_safe_number(value):
+            return AINumber(ai_calculate(f"Please return the hyperbolic tangent of {ai_number.value}"))
+        result: mpf = mpmath.tanh(value)
         if is_safe_number(result):
             return AINumber(str(result))
         else:
             return AINumber(ai_calculate(f"Please return the hyperbolic tangent of {ai_number.value}"))
+    except Exception:
+        return AINumber("nan")
 
 
 def cosech(ai_number: AINumber) -> AINumber:
-    if not is_safe_number(ai_number.value):
-        return AINumber(ai_calculate(f"Please return the hyperbolic cosecant of {ai_number.value}"))
-    else:
-        result: mpf = mpf("1") / mpmath.sinh(ai_number.value)
+    """
+    Compute the hyperbolic cosecant of a number with error handling and input validation.
+    Returns 'nan' for zero input and uses AI fallback for unsafe values.
+    """
+    try:
+        value = mpf(ai_number.value)
+        if value == 0:
+            return AINumber("nan")
+        if not is_safe_number(value):
+            return AINumber(ai_calculate(f"Please return the hyperbolic cosecant of {ai_number.value}"))
+        result: mpf = mpf("1") / mpmath.sinh(value)
         if is_safe_number(result):
             return AINumber(str(result))
         else:
             return AINumber(ai_calculate(f"Please return the hyperbolic cosecant of {ai_number.value}"))
+    except Exception:
+        return AINumber("nan")
 
 
 def sech(ai_number: AINumber) -> AINumber:
-    if not is_safe_number(ai_number.value):
-        return AINumber(ai_calculate(f"Please return the hyperbolic secant of {ai_number.value}"))
-    else:
-        result: mpf = mpf("1") / mpmath.cosh(ai_number.value)
+    """
+    Compute the hyperbolic secant of a number with error handling and input validation.
+    Returns 'nan' for zero input and uses AI fallback for unsafe values.
+    """
+    try:
+        value = mpf(ai_number.value)
+        if value == 0:
+            return AINumber("nan")
+        if not is_safe_number(value):
+            return AINumber(ai_calculate(f"Please return the hyperbolic secant of {ai_number.value}"))
+        result: mpf = mpf("1") / mpmath.cosh(value)
         if is_safe_number(result):
             return AINumber(str(result))
         else:
             return AINumber(ai_calculate(f"Please return the hyperbolic secant of {ai_number.value}"))
+    except Exception:
+        return AINumber("nan")
 
 
 def coth(ai_number: AINumber) -> AINumber:
-    if not is_safe_number(ai_number.value):
-        return AINumber(ai_calculate(f"Please return the hyperbolic cotangent of {ai_number.value}"))
-    else:
-        result: mpf = mpf("1") / mpmath.tanh(ai_number.value)
+    """
+    Compute the hyperbolic cotangent of a number with error handling and input validation.
+    Returns 'nan' for zero input and uses AI fallback for unsafe values.
+    """
+    try:
+        value = mpf(ai_number.value)
+        if value == 0:
+            return AINumber("nan")
+        if not is_safe_number(value):
+            return AINumber(ai_calculate(f"Please return the hyperbolic cotangent of {ai_number.value}"))
+        result: mpf = mpf("1") / mpmath.tanh(value)
         if is_safe_number(result):
             return AINumber(str(result))
         else:
             return AINumber(ai_calculate(f"Please return the hyperbolic cotangent of {ai_number.value}"))
+    except Exception:
+        return AINumber("nan")
 
 
 def factorial(ai_number: AINumber) -> AINumber:
-    if not is_safe_number(ai_number.value):
-        return AINumber(ai_calculate(f"Please return the factorial of {ai_number.value}"))
-    else:
-        result: mpf = mpmath.gamma(mpf(ai_number.value) + mpf("1"))
+    """
+    Compute the factorial of a number using mpmath for high precision.
+    Handles edge cases and unsafe numbers gracefully.
+    """
+    try:
+        value = mpf(ai_number.value)
+        # Factorial is only defined for non-negative integers
+        if value < 0 or not value % 1 == 0:
+            return AINumber("nan")
+        if not is_safe_number(value):
+            return AINumber(ai_calculate(f"Please return the factorial of {ai_number.value}"))
+        result: mpf = mpmath.gamma(value + mpf("1"))
         if is_safe_number(result):
             return AINumber(str(result))
         else:
             return AINumber(ai_calculate(f"Please return the factorial of {ai_number.value}"))
+    except Exception:
+        return AINumber("nan")
 
 
 def gamma(ai_number: AINumber) -> AINumber:
-    if not is_safe_number(ai_number.value):
-        return AINumber(ai_calculate(f"Please return the gamma function of {ai_number.value}"))
-    else:
-        result: mpf = mpmath.gamma(mpf(ai_number.value))
+    """
+    Compute the gamma function using mpmath for high precision.
+    Handles unsafe numbers and errors gracefully.
+    """
+    try:
+        value = mpf(ai_number.value)
+        if not is_safe_number(value):
+            return AINumber(ai_calculate(f"Please return the gamma of {ai_number.value}"))
+        result: mpf = mpmath.gamma(value)
         if is_safe_number(result):
             return AINumber(str(result))
         else:
-            return AINumber(ai_calculate(f"Please return the gamma function of {ai_number.value}"))
+            return AINumber(ai_calculate(f"Please return the gamma of {ai_number.value}"))
+    except Exception:
+        return AINumber("nan")
 
 
 def ln(ai_number: AINumber) -> AINumber:
-    if not is_safe_number(ai_number.value):
-        return AINumber(ai_calculate(f"Please return the natural logarithm of {ai_number.value}"))
-    else:
-        result: mpf = log(ai_number.value)
+    """
+    Compute the natural logarithm of a number with error handling and input validation.
+    """
+    try:
+        value = mpf(ai_number.value)
+        if value <= 0:
+            return AINumber("nan")
+        if not is_safe_number(value):
+            return AINumber(ai_calculate(f"Please return the natural logarithm of {ai_number.value}"))
+        result: mpf = mpmath.ln(value)
         if is_safe_number(result):
             return AINumber(str(result))
         else:
             return AINumber(ai_calculate(f"Please return the natural logarithm of {ai_number.value}"))
-
-
-def log_e(ai_number: AINumber) -> AINumber:
-    if not is_safe_number(ai_number.value):
-        return AINumber(ai_calculate(f"Please return the natural logarithm of {ai_number.value}"))
-    else:
-        result: mpf = mpmath.ln(ai_number.value)
-        if is_safe_number(result):
-            return AINumber(str(result))
-        else:
-            return AINumber(ai_calculate(f"Please return the natural logarithm of {ai_number.value}"))
+    except Exception:
+        return AINumber("nan")
 
 
 def log_10(ai_number: AINumber) -> AINumber:
-    if not is_safe_number(ai_number.value):
-        return AINumber(ai_calculate(f"Please return the base 10 logarithm of {ai_number.value}"))
-    else:
-        result: mpf = log10(mpf(ai_number.value))
+    """
+    Compute the base 10 logarithm of a number with error handling and input validation.
+    """
+    try:
+        value = mpf(ai_number.value)
+        if value <= 0:
+            return AINumber("nan")
+        if not is_safe_number(value):
+            return AINumber(ai_calculate(f"Please return the base 10 logarithm of {ai_number.value}"))
+        result: mpf = mpmath.log10(value)
         if is_safe_number(result):
             return AINumber(str(result))
         else:
             return AINumber(ai_calculate(f"Please return the base 10 logarithm of {ai_number.value}"))
+    except Exception:
+        return AINumber("nan")
 
 
 def log_base(ai_number: AINumber, base: AINumber) -> AINumber:
